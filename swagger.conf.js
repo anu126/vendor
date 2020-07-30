@@ -10,6 +10,10 @@ const swaggerDefinition = {
     basePath: '/',
     servers: [
         {
+            url: 'https://anu-vendor-app.herokuapp.com/',
+            description: 'heroku server'
+        },
+        {
             url: 'http://localhost:8080/',
             description: 'localhost'
         }

@@ -16,5 +16,5 @@ npm start
 ## Swagger Documentation
 
 ```
-/doc
+https://anu-vendor-app.herokuapp.com/doc
 ```
