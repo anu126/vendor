@@ -2,7 +2,7 @@ const productSchema = require('./productModel');
 
 async function getProduct(req,res) {
     try{
-        const products = await productSchema.find();
+        const products = await productSchema.find().populate('vendors');
         if(!products){
             return res.status(400).json({error: "no product found"})
         }
@@ -15,7 +15,7 @@ async function getProduct(req,res) {
 
 async function getOneProduct(req,res) {
     try{
-        const product = await productSchema.findById(req.params.id)
+        const product = await productSchema.findById(req.params.id).populate('vendors');
         if(!product){
             return res.status(400).json({error: "no product found"})
         }
@@ -68,7 +68,7 @@ async function updateProduct(req, res){
             productQuery['description'] = product_description;
         }
         
-        const updateProduct = await productSchema.findByIdAndUpdate(product._id, {$set: productQuery}, {new: true})
+        const updateProduct = await productSchema.findByIdAndUpdate(product._id, {$set: productQuery}, {new: true}).populate('vendors')
 
         if(!updateProduct){
             throw res.status(404).json({error: 'product not updated'})

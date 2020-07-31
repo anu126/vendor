@@ -1,4 +1,5 @@
 const vendorSchema = require('./vendorModel');
+const productSchema = require('../products/productModel');
 
 async function getVendor(req,res) {
     try{
@@ -98,16 +99,26 @@ async function deleteVendor(req,res) {
 async function addProduct(req,res) {
     try { 
         const {id} = req.params;
+        const {product_id} = req.body;
         const vendor = await vendorSchema.findById(id);
         if(!vendor){
             throw res.status(404).json({error: 'Vendor not found'})
         }
-        const query = { $addToSet: { products: req.body.product_id }};
-        const update = await vendorSchema.findOneAndUpdate({_id: id}, query, {new: true}).populate('products').exec();
-        if(!update){
-            throw res.status(500).json({error: 'unable to update'})
+        const product = await productSchema.findById(product_id);
+        if(!product){
+            throw res.status(404).json({error: 'Product not found'})
         }
-        res.json({message: 'added successfully', update})
+        const vendorQuery = { $addToSet: { products: product_id }};
+        const vendorUpdate = await vendorSchema.findOneAndUpdate({_id: id}, vendorQuery, {new: true}).populate('products').exec();
+        if(!vendorUpdate){
+            throw res.status(500).json({error: 'unable to update vendor'})
+        }
+        const productQuery = {$addToSet: { vendors: id }};
+        const productUpdate = await productSchema.findOneAndUpdate({_id: product_id}, productQuery, {new: true}).populate('vendors').exec();
+        if(!productUpdate){
+            throw res.status(500).json({error: 'unable to update product'})
+        }
+        res.json({message: 'added successfully', vendorUpdate, productUpdate})
     }
     catch(error){
         res.status(400).json({error: error.message})
@@ -121,12 +132,21 @@ async function removeProduct(req,res) {
         if(!vendor){
             throw res.status(404).json({error: 'Vendor not found'})
         }
-        const query = { $pull: { products: product_id }};
-        const update = await vendorSchema.findOneAndUpdate({_id: id}, query, {new: true}).populate('products').exec();
-        if(!update){
-            throw res.status(500).json({error: 'unable to remove'})
+        const product = await productSchema.findById(product_id);
+        if(!product){
+            throw res.status(404).json({error: 'Product not found'})
         }
-        res.json({message: 'removed successfully', update})
+        const vendorQuery = { $pull: { products: product_id }};
+        const vendorUpdate = await vendorSchema.findOneAndUpdate({_id: id}, vendorQuery, {new: true}).populate('products').exec();
+        if(!vendorUpdate){
+            throw res.status(500).json({error: 'unable to remove from vendor'})
+        }
+        const productQuery = { $pull: { vendors: id }};
+        const productUpdate = await vendorSchema.findOneAndUpdate({_id: product_id}, productQuery, {new: true}).populate('products').exec();
+        if(!productUpdate){
+            throw res.status(500).json({error: 'unable to remove from product'})
+        }
+        res.json({message: 'removed successfully', vendorUpdate, productUpdate})
     }
     catch(error){
         res.status(400).json({error: error.message})
